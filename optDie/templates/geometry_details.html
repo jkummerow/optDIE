@@ -1,0 +1,54 @@
+{%- extends "layout_nosidenav.html" %}
+
+{%- block table %}
+{{ super() }}
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Wendelverteiler: {{ item['name'] }}</h2>
+            <div>
+                Höhe: {{ item['height'] }} mm<br>
+                Durchmesser: {{ item['diameter'] }} mm<br>
+                Wendeln: {{ item['groove_count'] }}<br>
+                Wendeldurchmesser: {{ item['groove_diameter'] }} mm<br>
+                CAD-Datei: <a href="">{{ data['cad'] }}</a>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h3>Optimierungsläufe</h3>
+            <div class="panel panel-default">
+    {#            <div class="panel-heading">
+                    <h4>
+                      Fixed Header Scrolling Table
+                    </h4>
+                </div>#}
+                <table id="sourcetable" class="table table-fixed table-hover table-striped table-list-search">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in opt_runs %}
+                        <tr data-href="/opt_run/{{ item['id'] }}">
+                            <td>{{ item['id'] }}</td>
+                            <td>{{ item['name'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock -%}
+
+{% block scripts %}
+{{ super() }}
+<script>
+$('*[data-href]').on("click",function(){
+  window.location = $(this).data('href');
+  return false;
+});
+</script>
+{% endblock %}

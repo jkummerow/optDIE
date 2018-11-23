@@ -1,0 +1,167 @@
+{%- extends "layout.html" %}
+
+{% block styles %}
+  {{super()}}
+  <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/data_disp.css')}}">
+{% endblock %}
+
+
+{% block sidenav %}
+        <div class="list-group-item active">Filter</div>
+        <div class="list-group">
+            <div class="list-group-item">
+                <form action="#" method="get">
+                    <div class="input-group">
+                        <!-- USE TWITTER TYPEAHEAD JSON WITH API TO SEARCH -->
+                        <input class="form-control" id="system-search" name="q" placeholder="Search for" required>
+                        <span class="input-group-btn">
+                            <button type="submit" class="btn btn-default"><i class="glyphicon glyphicon-search"></i></button>
+                        </span>
+                    </div>
+                </form>
+            </div>
+            <div class="list-group-item">
+                QM: <span class="state"></span><br/>
+                <div class="advance_slide" data-col="1" data-min="10" data-max="500" data-step="1"></div>
+            </div>
+            <div class="list-group-item">
+                QL: <span class="state"></span><br/>
+                <div class="advance_slide" data-col="2" data-min="10" data-max="500" data-step="1"></div>
+            </div>
+            <div class="list-group-item">
+                QW: <span class="state"></span><br/>
+                <div class="advance_slide" data-col="3" data-min="2" data-max="32" data-step="1"></div>
+            </div>
+            <div class="list-group-item">
+                DP: <span class="state"></span><br/>
+                <div class="advance_slide" data-col="4" data-min="2" data-max="32" data-step="1"></div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block data_disp %}
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 col-xs-12 fig">
+      <div class="row">
+        <div class="col-xs-1 visible-xs visible-sm fig-wrapper-toggle">
+          <a class="well well-sm fig-toggle" direction="left"><span class="glyphicon glyphicon-chevron-left"></span></a>
+        </div>
+        <div class="col-xs-10 col-md-12 fig-frame">
+            <div class="visible-sm visible-xs" id="fig-changer" style="margin-top: -200px;"></div>
+            <div class="col-md-4">
+              {#<h4>Wendel</h4>#}
+              <div class="well">
+                  <h4>Wendel</h4>
+                 <div class="chart-container">
+                   {#<svg id="ChartW"></svg>#}
+                   <canvas id="ChartW"></canvas>
+                 </div>
+              </div>
+
+            </div>
+            <div class="col-md-4">
+              <div class="well">
+                <h4>Spalt</h4>
+                <div class="chart-container">
+                  <canvas {#class="my-4 w-100 chartjs-render-monitor"#} id="ChartS"></canvas>
+                </div>
+               </div>
+            </div>
+            <div class="col-md-4">
+              <div class="well">
+                <h4>Auslass</h4>
+                <div class="chart-container">
+                  <canvas {#class="my-4 w-100 chartjs-render-monitor"#} id="ChartO"></canvas>
+                </div>
+              </div>
+            </div>
+        </div>
+        <div class="col-xs-1 visible-xs visible-sm fig-wrapper-toggle">
+          <a class="well well-sm fig-toggle" direction="right"><span class="glyphicon glyphicon-chevron-right"></span></a>
+        </div>
+      </div>
+    </div>
+{% endblock %}
+
+
+{%- block table %}
+{{super()}}
+    <div class="row">
+        <div class="panel panel-default">
+{#            <div class="panel-heading">
+                <h4>
+                  Fixed Header Scrolling Table
+                </h4>
+            </div>#}
+            <table id="sourcetable" class="table table-fixed table-hover table-striped table-list-search">
+                <thead class="thead-sticky">
+                    <tr>
+                        <th>#</th>
+                        <th>QM</th>
+                        <th>QL</th>
+                        <th>QW</th>
+                        <th>DP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in list %}
+                    <tr data="{{ loop.index0 }}">
+                        <td>{{ item['DesignPoint'] }}</td>
+                        <td>{{ item['QM'] }}</td>
+                        <td>{{ item['QL'] }}</td>
+                        <td>{{ item['QW'] }}</td>
+                        <td>{{ item['DP'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock -%}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+<script src="{{ url_for('static', filename='js/chart_func.js') }}"></script>
+<script>
+var data = [{% for d in data -%}[ [{{ d['Massenstrom']|map('abs')|join(', ') }}], {{ d['Geschwindigkeit'] }}, {{ d['Wandspannung'] }}],{% endfor -%}];
+var ChartW = createChart('ChartW', data[0][0]);
+var ChartS = createChart('ChartS', data[0][1]);
+var ChartO = createChart('ChartO', data[0][2]);
+
+//global var to track picks
+var pickedup;
+$(document).ready(function() {
+    $( "#sourcetable tbody tr" ).on( "click", function( event ) {
+
+          // get back to where it was before if it was selected :
+          if (pickedup != null) {
+              pickedup.css( "background-color", "" );
+          }
+
+{#          $("#fillname").val($(this).find("td").eq(1).html());#}
+          $( this ).css( "background-color", "#428bca" );
+          var id = $( this ).attr("data");
+          updateChart(ChartW, data[id][0]);
+          updateChart(ChartS, data[id][1]);
+          updateChart(ChartO, data[id][2]);
+
+          pickedup = $( this );
+    });
+});
+
+var toggle_pos = 1;
+var toggle_offset = 200;
+$(document).ready(function() {
+    $( "a.fig-toggle" ).on( "click", function( event ) {
+        if ( $( this ).attr("direction") == "left" ) {
+            toggle_pos = toggle_pos <= 1 ? 1 : toggle_pos-1;
+        } if ( $( this ).attr("direction") == "right" ) {
+            toggle_pos = toggle_pos >= 3 ? 3 : toggle_pos+1;
+        }
+        var t_margin = -toggle_pos*toggle_offset;
+        $( "#fig-changer" ).css( "margin-top", t_margin );
+    });
+});
+</script>
+{% endblock scripts %}

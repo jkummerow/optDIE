@@ -1,0 +1,81 @@
+{%- extends "layout.html" %}
+{%- block table %}
+{{super()}}
+    <div class="row">
+        <div class="panel panel-default">
+{#            <div class="panel-heading">
+                <h4>
+                  Fixed Header Scrolling Table
+                </h4>
+            </div>#}
+            <table id="sourcetable" class="table table-fixed table-hover table-striped">
+                <thead class="thead-sticky">
+                    <tr>
+                        <th>#</th>
+                        <th>QM</th>
+                        <th>QL</th>
+                        <th>QW</th>
+                        <th>DP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in list %}
+                    <tr data="{{ loop.index0 }}">
+                        <td>{{ item['DesignPoint'] }}</td>
+                        <td>{{ item['QM'] }}</td>
+                        <td>{{ item['QL'] }}</td>
+                        <td>{{ item['QW'] }}</td>
+                        <td>{{ item['DP'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock -%}
+
+{% block data -%}
+{% for d in data -%}[ [{{ d['Massenstrom']|map('abs')|join(', ') }}], {{ d['Geschwindigkeit'] }}, {{ d['Wandspannung'] }}],{% endfor -%}
+{% endblock -%}
+
+{% block scripts %}
+{{ super() }}
+<script>
+//global var to track picks
+var pickedup;
+$(document).ready(function() {
+    $( "#sourcetable tbody tr" ).on( "click", function( event ) {
+
+          // get back to where it was before if it was selected :
+          if (pickedup != null) {
+              pickedup.css( "background-color", "" );
+          }
+
+{#          $("#fillname").val($(this).find("td").eq(1).html());#}
+          $( this ).css( "background-color", "#428bca" );
+          var id = $( this ).attr("data");
+          updateChart(ChartW, data[id][0]);
+          updateChart(ChartS, data[id][1]);
+          updateChart(ChartO, data[id][2]);
+
+          pickedup = $( this );
+    });
+});
+</script>
+<script>
+var toggle_pos = 1;
+var toggle_offset = 200;
+$(document).ready(function() {
+    $( "a.fig-toggle" ).on( "click", function( event ) {
+        if ( $( this ).attr("direction") == "left" ) {
+            toggle_pos = toggle_pos <= 1 ? 1 : toggle_pos-1;
+        } if ( $( this ).attr("direction") == "right" ) {
+            toggle_pos = toggle_pos >= 3 ? 3 : toggle_pos+1;
+        }
+        var t_margin = -toggle_pos*toggle_offset;
+        $( "#fig-changer" ).css( "margin-top", t_margin );
+    });
+});
+</script>
+{% endblock scripts %}

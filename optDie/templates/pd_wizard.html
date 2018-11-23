@@ -1,0 +1,166 @@
+{%- extends "layout_nosidenav.html" %}
+
+{% block styles %}
+    {{super()}}
+
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" >
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/wizard.css')}}" >
+{% endblock %}
+
+{%- block table %}
+<div class="container">
+    <div class="well">
+        <h2>Vorverteiler Auswahl</h2>
+    </div>
+    <form method="post">
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Allgemein</h3>
+                    </div>
+                    <div class="panel-body">
+                        {% for item in [['Wendelzahl','n', [3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,24,25,26,27,28,29,30,31,32]],
+                                        ['Anwendung', 'awd', ['Rohr','Folie','Ummantelung']] ] %}
+                        <div class="input-group">
+                            <span class="input-group-addon">{{ item[0] }}</span>
+                            <select class="form-control" name="{{ item[1] }}">
+                                {% for opt in item[2] %}
+                                <option>{{ opt }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Gewichtung</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                        <label>Geringe Verweilzeit</label>
+                        <div class="slide-c-handle form-control">
+                          <div class="custom-handle ui-slider-handle "></div>
+                        </div>
+                        </div>
+                        <div class="form-group">
+                        <label>Kompakter Bauraum</label>
+                        <div class="slide-c-handle form-control">
+                          <div class="custom-handle ui-slider-handle "></div>
+                        </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Vorschlag</h3>
+                    </div>
+                    <div class="panel-body" id="proposals" style="display: grid;">
+                        <div class="alert alert-info">Sternverteiler<span class="pull-right"></span></div>
+                        <div class="alert alert-info">2<sup>n</sup>-Vorverteiler<span class="pull-right"></span></div>
+                        <div class="alert alert-info">Längenbalancierter Vorverteiler<span class="pull-right"></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock -%}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script>
+var exc_crit = [true, true, true];
+var prp_ordr = [1,2,3];
+var inp_n = $( "select[name='n']" )[0];
+var inp_awd = $( "select[name='awd']" )[0];
+var inp_slds = $( ".slide-c-handle" );
+var exc_awd = [true, true, false];
+var colour = ['alert-danger', 'alert-info'];
+var props = $( "#proposals" ).children( "div" );
+var prp_wght = [[1, -1],[-1, 1],[0.5,1]];
+var prp_score = [0,0,0];
+
+
+function update_proposal( eventObject ) {
+    var n = Number(inp_n.options[inp_n.selectedIndex].text);
+    var awd = inp_awd.selectedIndex;
+
+    //check if n is achievable through 2^k
+    var two_tn = Math.log(n)/Math.log(2);
+    exc_crit[1] = parseInt(two_tn) === two_tn;
+
+    //check for 'Ummantelung'
+    exc_crit[0] = exc_awd[awd];
+
+    var wght_time = Number(inp_slds.eq(0).slider("value"));
+    var wght_space = Number(inp_slds.eq(1).slider("value"));
+
+    $.each(prp_score, function(i) {
+        prp_score[i] = prp_wght[i][0] * wght_time + prp_wght[i][1] * wght_space;
+        $( props ).find("span").eq(i).html(prp_score[i] + " %");
+    });
+    var prp_score_indexd = [];
+    for (var i in prp_score) {
+        prp_score_indexd.push([prp_score[i], i]);
+    }
+    prp_score_indexd.sort(function(left, right) {
+        return left[0] > right[0] ? -1 : 1;
+    });
+
+    for (var j in prp_score_indexd) {
+        prp_ordr[prp_score_indexd[j][1]] = j;
+    }
+
+
+    console.log(prp_wght[0][0] * wght_time + prp_wght[0][1] * wght_space );
+
+    //colour and order
+    props.removeClass( colour.join(" ") );
+    $(props).each(function (i) {
+        $( this ).addClass( colour[Number(exc_crit[i])] );
+        $( this ).css("order", prp_ordr[i]);
+    });
+
+    //console.log(exc_crit);
+}
+
+$(document).ready(function(){
+    var getSlider = $(".slide-c-handle");
+    getSlider.each(function(i, val) {
+        var sldr = $(this);
+        var handle = sldr.find("div.ui-slider-handle");
+
+        sldr.slider({
+            create: function() {
+                handle.text( sldr.slider( "value" ) );
+            },
+            slide: function( event, ui ) {
+                handle.text( ui.value );
+                update_proposal();
+            }
+        });
+    });
+    var getSelect = $( "select" );
+    getSelect.on("change", update_proposal);
+    {#getSelect.each(function(i, val) {#}
+    {#    $( this ).on("change", update_proposal);#}
+    {#});#}
+    {#var inp_n = $( "select[name='n']" )[0];#}
+    {#$( inp_n ).on("change", update_proposal);#}
+});
+
+$(function() {
+    update_proposal();
+});
+</script>
+{% endblock %}

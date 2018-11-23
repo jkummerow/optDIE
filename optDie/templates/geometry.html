@@ -1,0 +1,70 @@
+{%- extends "layout.html" %}
+{%- block table %}
+{{super()}}
+    <div class="row">
+        <div class="panel panel-default">
+            <table id="sourcetable" class="table table-fixed table-hover table-striped table-list-search">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Durchmesser</th>
+                        <th>Höhe</th>
+                        <th>Wendeln</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in list %}
+                    <tr data-href="geometry/{{ item['id'] }}">
+                        <td>{{ item['id'] }}</td>
+                        <td>{{ item['name'] }}</td>
+                        <td>{{ item['diameter'] }}</td>
+                        <td>{{ item['height'] }}</td>
+                        <td>{{ item['groove_count'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock -%}
+
+{% block sidenav %}
+        <div class="list-group-item active">Filter</div>
+        <div class="list-group">
+            <div class="list-group-item">
+                <form action="#" method="get">
+                    <div class="input-group">
+                        <!-- USE TWITTER TYPEAHEAD JSON WITH API TO SEARCH -->
+                        <input class="form-control" id="system-search" name="q" placeholder="Search for" required>
+                        <span class="input-group-btn">
+                            <button type="submit" class="btn btn-default"><i class="glyphicon glyphicon-search"></i></button>
+                        </span>
+                    </div>
+                </form>
+            </div>
+            <div class="list-group-item">
+                Durchmesser: <span class="state"></span><br/>
+                <div class="advance_slide" data-col="2" data-min="10" data-max="500" data-step="1"></div>
+            </div>
+            <div class="list-group-item">
+                Höhe: <span class="state"></span><br/>
+                <div class="advance_slide" data-col="3" data-min="10" data-max="500" data-step="1"></div>
+            </div>
+            <div class="list-group-item">
+                Wendeln: <span class="state"></span><br/>
+                <div class="advance_slide" data-col="4" data-min="2" data-max="32" data-step="1"></div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+$('*[data-href]').on("click",function(){
+  window.location = $(this).data('href');
+  return false;
+});
+</script>
+{% endblock scripts %}

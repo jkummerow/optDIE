@@ -1,0 +1,167 @@
+{%- extends "layout_nosidenav.html" %}
+
+{%- block table %}
+
+<div class="container">
+<div class="well well-sm">
+    <h3>Vorauslegung Wendelverteiler</h3>
+</div>
+
+    <ul class="nav nav-tabs ">
+        <li role="presentation" {% if results[0][0] is not defined %}class="active"{% endif %}><a href="#dim_in" data-toggle="tab">Eingabe</a></li>
+        <li role="presentation" class={% if results[0][0] is not defined %}"disabled"{% else %}"active"{% endif %}><a href="#dim_out" {% if results[0][0] is defined %}data-toggle="tab"{% endif %}>Ausgabe</a></li>
+    </ul>
+
+    <div class="panel panel-default tab-content" style="border-top: none;" >
+        <div class="panel-body tab-pane {% if results[0][0] is not defined %}active{% endif %}" id="dim_in">
+            <form method="post">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Geometrie</h3>
+                        </div>
+                        <div class="panel-body">
+                            {% for item in [['Bauhöhe', 'mm', 'H'],
+                                            ['Durchmesser', 'mm', 'D'],
+                                            ['Wendelanzahl', '', 'n'],
+                                            ['Steigungswinkel', '°', 'alpha'],
+                                            ['Kanalbreite', 'mm', 'wt_b'],
+                                            ['Endspalt', 'mm', 'st_end']] %}
+                            <div class="input-group">
+                                <span class="input-group-addon">{{ item[0] }}</span>
+                                <input type="text" class="form-control" name="{{ item[2] }}" value="{{ form[item[2]] }}">
+                                {%- if item[1] != '' %}
+                                <span class="input-group-addon">{{ item[1] }}</span>
+                                {%- endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"> <h3 class="panel-title">Material</h3></div>
+                        <div class="panel-body">
+                            <div class="input-group">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Typ <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                    <li><a href="#">PE</a></li>
+                                    <li><a href="#">PA</a></li>
+                                    <li><a href="#">PP</a></li>
+                                    <li role="separator" class="divider"></li>
+                                    <li><a href="#">Separated link</a></li>
+                                    </ul>
+                                </div><div class="btn-group">
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Kunststoff <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                    <li><a href="#">PE</a></li>
+                                    <li><a href="#">PA</a></li>
+                                    <li><a href="#">PP</a></li>
+                                    <li role="separator" class="divider"></li>
+                                    <li><a href="#">Separated link</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {% for item in [['Dichte','kg/m³', 'roh'],
+                                            ['Carreau A','Pa s', 'car_A'],
+                                            ['Carreau B','s', 'car_B'],
+                                            ['Carreau C','', 'car_C'],
+                                            ['Standardtemp.','°C', 'Ts'],
+                                            ['Bezugstemp.','°C', 'T0']] %}
+                            <div class="input-group">
+                                <span class="input-group-addon">{{ item[0] }}</span>
+                                <input type="text" class="form-control" name="{{ item[2] }}" value="{{ form[item[2]] }}">
+                                {%- if item[1] != '' %}
+                                <span class="input-group-addon">{{ item[1] }}</span>
+                                {%- endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"> <h3 class="panel-title">Betriebspunkt</h3></div>
+                        <div class="panel-body">
+                            <div class="input-group">
+                              <span class="input-group-addon">Temperatur</span>
+                              <input type="text" class="form-control" name="T" value="{{ form['T'] }}">
+                              <span class="input-group-addon">°C</span>
+                            </div>
+                            <div class="input-group">
+                              <span class="input-group-addon">Durchsatz</span>
+                              <input type="text" class="form-control" name="m" value="{{ form['m'] }}">
+                              <span class="input-group-addon">kg/h</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"> <h3 class="panel-title">Rechnungsparameter</h3></div>
+                        <div class="panel-body">
+                            <div class="input-group">
+                              <span class="input-group-addon">Elementdichte</span>
+                              <input type="text" class="form-control" name="psln" value="{{ form['psln'] }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-2 col-md-offset-10">
+                    <button type="submit" class="btn btn-danger btn-block">Berechnen</button>
+                </div>
+            </div>
+            </form>
+        </div>
+        <div class="panel-body tab-pane {% if results[0][0] is defined %}active{% endif %}" id="dim_out">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"> <h3 class="panel-title">Wendeltiefe</h3></div>
+                        <div class="panel-body">
+                             <div class="chart-container" style="height: 300px">
+                               <canvas id="ChartW"></canvas>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"> <h3 class="panel-title">Spaltweite</h3></div>
+                        <div class="panel-body">
+                             <div class="chart-container" style="height: 300px">
+                               <canvas id="ChartS"></canvas>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+{% endblock -%}
+
+{% block scripts %}
+  {{super()}}
+  <script>
+    var wt={{ results[0] }};
+    var st={{ results[1] }};
+    var ChartW = createChartDIM('ChartW', wt, ['Wendellänge / mm', 'Wendeltiefe / mm']);
+    var ChartS = createChartDIM('ChartS', st, ['Bauhöhe / mm', 'Spaltweite / mm']);
+  </script>
+
+{% endblock %}

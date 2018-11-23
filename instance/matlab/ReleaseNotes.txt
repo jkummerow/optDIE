@@ -1,0 +1,9 @@
+Release Version: 0.1.25
+Releasedate: 07.11.2014
+
+= Recent Changes =
+Exportfunktion nach Ansys WB
+	* Stufen an Optimierer
+	* Verschiebung Wendel- Spalttiefe als DP
+	* Variation der ersten Wendel- Spaltstützstelle  als DP
+		* mit Anpassung des Verlaufs, sodass Bedingung WT1>!WT2 && ST1<!ST2 erfüllt wird
